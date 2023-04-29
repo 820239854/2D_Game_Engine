@@ -79,10 +79,13 @@ void Game::Update()
 
 void Game::Render()
 {
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
     SDL_RenderClear(renderer);
 
-    // TODO: Draw our game objects
+    // Draw a rectangle
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_Rect player = {10, 10, 20, 20};
+    SDL_RenderFillRect(renderer, &player);
 
     SDL_RenderPresent(renderer);
 }
