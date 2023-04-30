@@ -1,10 +1,12 @@
 #include "Game.h"
-#include "../Logger/Logger.h"
-#include "../ECS/ECS.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <glm/glm.hpp>
 #include <iostream>
+#include "../Logger/Logger.h"
+#include "../ECS/ECS.h"
+#include "../Components/TransformComponent.h"
+#include "../Components/RigidBodyComponent.h"
 
 Game::Game()
 {
@@ -75,7 +77,8 @@ void Game::ProcessInput()
 void Game::Setup()
 {
     Entity tank = registry->CreateEntity();
-    Entity truck = registry->CreateEntity();
+    registry->AddComponent<TransformComponent>(tank, glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0.0);
+    registry->AddComponent<RigidBodyComponent>(tank, glm::vec2(50.0, 0.0));
 }
 
 void Game::Update()
@@ -88,7 +91,7 @@ void Game::Update()
     }
 
     // The difference in ticks since the last frame, converted to seconds
-    double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0;
+    // double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0;
 
     // Store the "previous" frame time
     millisecsPreviousFrame = SDL_GetTicks();

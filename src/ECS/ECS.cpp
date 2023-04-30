@@ -32,13 +32,13 @@ const Signature System::GetComponentsSignature() const
 Entity Registry::CreateEntity()
 {
     int entityId = numEntities++;
-    if (entityId >= entityComponentsSignatures.size())
+    if (entityId >= static_cast<int>(entityComponentsSignatures.size()))
     {
         entityComponentsSignatures.resize(entityId + 1);
     }
     Entity entity(entityId);
     entitiesToCreate.insert(entity);
-    if (entityId >= entityComponentsSignatures.size())
+    if (entityId >= static_cast<int>(entityComponentsSignatures.size()))
     {
         entityComponentsSignatures.resize(entityId + 1);
     }
