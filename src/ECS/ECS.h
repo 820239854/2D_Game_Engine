@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <typeindex>
 #include <set>
+#include <memory>
+#include "../Logger/Logger.h"
 
 const unsigned int MAX_COMPONENTS = 32;
 typedef std::bitset<MAX_COMPONENTS> Signature;
@@ -156,8 +158,14 @@ private:
 class Registry
 {
 public:
-    Registry() = default;
-    ~Registry() = default;
+    Registry()
+    {
+        Logger::Log("Registry created");
+    };
+    ~Registry()
+    {
+        Logger::Log("Registry destroyed");
+    };
 
     Entity CreateEntity();
     void KillEntity(Entity entity);
@@ -184,10 +192,10 @@ public:
     void AddEntityToSystems(Entity entity);
 
 private:
-    int numEntities;
-    std::vector<IPool *> componentPools;
+    int numEntities = 0;
+    std::vector<std::shared_ptr<IPool>> componentPools;
     std::vector<Signature> entityComponentsSignatures;
-    std::unordered_map<std::type_index, System *> systems;
+    std::unordered_map<std::type_index, std::shared_ptr<System>> systems;
 
     std::set<Entity> entitiesToCreate;
     std::set<Entity> entitiesToKill;
@@ -213,10 +221,10 @@ void Registry::AddComponent(Entity entity, TArgs &&...args)
 
     if (!componentPools[componentId])
     {
-        componentPools[componentId] = new Pool<TComponrnt>();
+        componentPools[componentId] = std::make_shared<Pool<TComponrnt>>();
     }
 
-    Pool<TComponrnt> *componentPool = componentPools[componentId];
+    std::shared_ptr<Pool<TComponrnt>> componentPool = std::static_pointer_cast<Pool<TComponrnt>>(componentPools[componentId]);
     if (entityId >= componentPool->GetSize())
     {
         componentPool->Resize(numEntities);
@@ -246,7 +254,7 @@ bool Registry::HasComponent(Entity entity) const
 template <typename TSystem, typename... TArgs>
 void Registry::AddSystem(TArgs &&...args)
 {
-    TSystem *newSystem(new TSystem(std::forward<TArgs>(args)...));
+    std::shared_ptr<TSystem> newSystem = std::make_shared<TSystem>(std::forward<TArgs>(args)...);
     systems.insert(std::make_pair(std::type_index(typeid(TSystem)), newSystem));
 };
 
