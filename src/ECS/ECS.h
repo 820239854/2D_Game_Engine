@@ -89,8 +89,75 @@ private:
     std::vector<Entity> entities;
 };
 
+class IPool
+{
+public:
+    virtual ~IPool(){};
+};
+
+template <typename T>
+class Pool : public IPool
+{
+public:
+    Pool(int size = 100)
+    {
+        data.reserve(size);
+    }
+
+    virtual ~Pool() = default;
+
+    bool isEmpty() const
+    {
+        return data.empty();
+    }
+
+    int GetSize() const
+    {
+        return data.size();
+    }
+
+    void Resize(int size)
+    {
+        data.resize(size);
+    }
+
+    void Clear()
+    {
+        data.clear();
+    }
+
+    void Add(T object)
+    {
+        data.push_back(object);
+    }
+
+    void Set(int index, T object)
+    {
+        data[index] = object;
+    }
+
+    T &Get(int index)
+    {
+        return static_cast<T &> data[index];
+    }
+
+    T &operator[](int index)
+    {
+        return data[index];
+    }
+
+private:
+    std::vector<T> data;
+};
 class Registry
 {
+public:
+    Registry() = default;
+    ~Registry() = default;
+
+private:
+    int numEntities;
+    std::vector<IPool *> componentPools;
 };
 
 template <typename TComponrnt>
