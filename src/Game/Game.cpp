@@ -9,6 +9,7 @@
 Game::Game()
 {
     isRunning = false;
+    registry = new Registry();
     Logger::Log("Game constructor called!");
 }
 
@@ -73,6 +74,8 @@ void Game::ProcessInput()
 
 void Game::Setup()
 {
+    Entity tank = registry->CreateEntity();
+    Entity truck = registry->CreateEntity();
 }
 
 void Game::Update()
@@ -95,7 +98,6 @@ void Game::Render()
 {
     SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
     SDL_RenderClear(renderer);
-
 
     SDL_RenderPresent(renderer);
 }

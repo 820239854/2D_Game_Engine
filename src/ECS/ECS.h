@@ -1,4 +1,5 @@
-#define pragma once
+#ifndef ECS_H
+#define ECS_H
 
 #include <bitset>
 #include <vector>
@@ -141,7 +142,7 @@ public:
 
     T &Get(int index)
     {
-        return static_cast<T &> data[index];
+        return static_cast<T &>(data[index]);
     }
 
     T &operator[](int index)
@@ -202,7 +203,7 @@ void System::RequireComponent()
 template <typename TComponrnt, typename... TArgs>
 void Registry::AddComponent(Entity entity, TArgs &&...args)
 {
-    const auto componentId = GetComponentId<TComponrnt>().GetId();
+    const auto componentId = Component<TComponrnt>().GetId();
     const auto entityId = entity.GetId();
 
     if (componentId >= componentPools.size())
@@ -229,7 +230,7 @@ void Registry::AddComponent(Entity entity, TArgs &&...args)
 template <typename TComponrnt>
 void Registry::RemoveComponent(Entity entity)
 {
-    const auto componentId = GetComponentId<TComponrnt>().GetId();
+    const auto componentId = Component<TComponrnt>().GetId();
     const auto entityId = entity.GetId();
     entityComponentsSignatures[entityId].set(componentId, false);
 };
@@ -237,7 +238,7 @@ void Registry::RemoveComponent(Entity entity)
 template <typename TComponrnt>
 bool Registry::HasComponent(Entity entity) const
 {
-    const auto componentId = GetComponentId<TComponrnt>().GetId();
+    const auto componentId = Component<TComponrnt>().GetId();
     const auto entityId = entity.GetId();
     return entityComponentsSignatures[entityId].test(componentId);
 };
@@ -267,5 +268,7 @@ template <typename TSystem>
 TSystem &Registry::GetSystem() const
 {
     const auto systemId = systems.find(std::type_index(typeid(TSystem)));
-    return *(static_cast<TSystem*>(systemId->second));
+    return *(static_cast<TSystem *>(systemId->second));
 };
+
+#endif
