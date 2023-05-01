@@ -302,7 +302,7 @@ template <typename TSystem>
 TSystem &Registry::GetSystem() const
 {
     const auto systemId = systems.find(std::type_index(typeid(TSystem)));
-    return *(static_cast<TSystem *>(systemId->second));
+    return *(std::static_pointer_cast<TSystem>(systemId->second));
 };
 
 template <typename TComponrnt, typename... TArgs>

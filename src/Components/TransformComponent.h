@@ -1,4 +1,5 @@
-#define pragram once
+#ifndef TRANSFORM_COMPONENT_H
+#define TRANSFORM_COMPONENT_H
 
 #include <glm/glm.hpp>
 
@@ -15,3 +16,5 @@ struct TransformComponent
         this->rotation = rotation;
     }
 };
+
+#endif
