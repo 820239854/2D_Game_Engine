@@ -50,6 +50,11 @@
         "list": "cpp",
         "set": "cpp",
         "bitset": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "chrono": "cpp",
+        "cstring": "cpp",
+        "ctime": "cpp",
+        "ratio": "cpp",
+        "sstream": "cpp"
     }
 }
