@@ -49,6 +49,7 @@
         "forward_list": "cpp",
         "list": "cpp",
         "set": "cpp",
-        "bitset": "cpp"
+        "bitset": "cpp",
+        "typeindex": "cpp"
     }
 }
