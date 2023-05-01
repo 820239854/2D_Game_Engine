@@ -72,6 +72,17 @@ public:
         return id > other.id;
     }
 
+    template <typename TComponrnt, typename... TArgs>
+    void AddComponent(TArgs &&...args);
+    template <typename TComponrnt>
+    void RemoveComponent();
+    template <typename TComponrnt>
+    bool HasComponent() const;
+    template <typename TComponrnt>
+    TComponrnt &GetComponent() const;
+
+    class Registry *registry;
+
 private:
     int id;
 };
@@ -179,6 +190,8 @@ public:
     void RemoveComponent(Entity entity);
     template <typename TComponrnt>
     bool HasComponent(Entity entity) const;
+    template <typename TComponrnt>
+    TComponrnt &GetComponent(Entity entity) const;
 
     template <typename TSystem, typename... TArgs>
     void AddSystem(TArgs &&...args);
@@ -240,17 +253,28 @@ void Registry::AddComponent(Entity entity, TArgs &&...args)
 template <typename TComponrnt>
 void Registry::RemoveComponent(Entity entity)
 {
-    const auto componentId = Component<TComponrnt>().GetId();
+    const auto componentId = Component<TComponrnt>::GetId();
     const auto entityId = entity.GetId();
     entityComponentsSignatures[entityId].set(componentId, false);
+
+    Logger::Log("Component id = " + std::to_string(componentId) + " was removed from entity id " + std::to_string(entityId));
 };
 
 template <typename TComponrnt>
 bool Registry::HasComponent(Entity entity) const
 {
-    const auto componentId = Component<TComponrnt>().GetId();
+    const auto componentId = Component<TComponrnt>::GetId();
     const auto entityId = entity.GetId();
     return entityComponentsSignatures[entityId].test(componentId);
+};
+
+template <typename TComponrnt>
+TComponrnt &Registry::GetComponent(Entity entity) const
+{
+    const auto componentId = Component<TComponrnt>::GetId();
+    const auto entityId = entity.GetId();
+    auto componentPool = std::static_pointer_cast<Pool<TComponrnt>>(componentPools[componentId]);
+    return componentPool->Get(entityId);
 };
 
 template <typename TSystem, typename... TArgs>
@@ -279,6 +303,30 @@ TSystem &Registry::GetSystem() const
 {
     const auto systemId = systems.find(std::type_index(typeid(TSystem)));
     return *(static_cast<TSystem *>(systemId->second));
+};
+
+template <typename TComponrnt, typename... TArgs>
+void Entity::AddComponent(TArgs &&...args)
+{
+    registry->AddComponent<TComponrnt>(*this, std::forward<TArgs>(args)...);
+};
+
+template <typename TComponrnt>
+void Entity::RemoveComponent()
+{
+    registry->RemoveComponent<TComponrnt>(*this);
+};
+
+template <typename TComponrnt>
+bool Entity::HasComponent() const
+{
+    return registry->HasComponent<TComponrnt>(*this);
+};
+
+template <typename TComponrnt>
+TComponrnt &Entity::GetComponent() const
+{
+    return registry->GetComponent<TComponrnt>(*this);
 };
 
 #endif
