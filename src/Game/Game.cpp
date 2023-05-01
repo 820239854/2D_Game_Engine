@@ -15,6 +15,7 @@ Game::Game()
 {
     isRunning = false;
     registry = std::make_unique<Registry>();
+    assetStore = std::make_unique<AssetStore>();
     Logger::Log("Game constructor called!");
 }
 
@@ -82,15 +83,20 @@ void Game::Setup()
     registry->AddSystem<MovementSystem>();
     registry->AddSystem<RenderSystem>();
 
+    // Adding assets to the asset store
+    assetStore->AddTexture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
+    assetStore->AddTexture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
+
+    // Create an entity
     Entity tank = registry->CreateEntity();
-    tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0.0);
-    tank.AddComponent<RigidBodyComponent>(glm::vec2(50.0, 0.0));
-    tank.AddComponent<SpriteComponent>(10, 10);
+    tank.AddComponent<TransformComponent>(glm::vec2(10.0, 10.0), glm::vec2(1.0, 1.0), 0.0);
+    tank.AddComponent<RigidBodyComponent>(glm::vec2(40.0, 0.0));
+    tank.AddComponent<SpriteComponent>("tank-image", 32, 32);
 
     Entity truck = registry->CreateEntity();
-    truck.AddComponent<TransformComponent>(glm::vec2(100.0, 30.0), glm::vec2(1.0, 1.0), 0.0);
-    truck.AddComponent<RigidBodyComponent>(glm::vec2(10.0, 50.0));
-    truck.AddComponent<SpriteComponent>(10, 10);
+    truck.AddComponent<TransformComponent>(glm::vec2(50.0, 100.0), glm::vec2(1.0, 1.0), 0.0);
+    truck.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 50.0));
+    truck.AddComponent<SpriteComponent>("truck-image", 32, 32);
 }
 
 void Game::Update()
@@ -117,7 +123,7 @@ void Game::Render()
     SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
     SDL_RenderClear(renderer);
 
-    registry->GetSystem<RenderSystem>().Update(renderer);
+    registry->GetSystem<RenderSystem>().Update(renderer, assetStore);
     SDL_RenderPresent(renderer);
 }
 
