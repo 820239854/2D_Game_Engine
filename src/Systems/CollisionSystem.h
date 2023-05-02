@@ -18,7 +18,7 @@ public:
 
     void Update(std::unique_ptr<EventBus> &eventBus)
     {
-        auto entities = GetEntities();
+        auto entities = GetSystemEntities();
         // Loop all the entities that the system is interested in
         for (auto i = entities.begin(); i != entities.end(); i++)
         {

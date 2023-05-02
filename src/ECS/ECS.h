@@ -97,7 +97,7 @@ public:
 
     void AddEntity(Entity entity);
     void RemoveEntity(Entity entity);
-    std::vector<Entity> GetEntities() const;
+    std::vector<Entity> GetSystemEntities() const;
     const Signature GetComponentsSignature() const;
 
     template <typename TComponrnt>

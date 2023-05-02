@@ -14,7 +14,7 @@ public:
 
     void Update(double deltaTime)
     {
-        for (auto entity : GetEntities())
+        for (auto entity : GetSystemEntities())
         {
             auto &transform = entity.GetComponent<TransformComponent>();
             const auto movement = entity.GetComponent<RigidBodyComponent>();
