@@ -21,7 +21,7 @@ public:
             transform.position.x += movement.velocity.x * deltaTime;
             transform.position.y += movement.velocity.y * deltaTime;
 
-            Logger::Log("Entity " + std::to_string(entity.GetId()) + " moved to position: " + std::to_string(transform.position.x) + ", " + std::to_string(transform.position.y));
+            // Logger::Log("Entity " + std::to_string(entity.GetId()) + " moved to position: " + std::to_string(transform.position.x) + ", " + std::to_string(transform.position.y));
         }
     }
 };

@@ -64,6 +64,11 @@ public:
         Logger::Log("EventBus destructor called!");
     }
 
+    void Reset()
+    {
+        subscribers.clear();
+    }
+
     ///////////////////////////////////////////////////////////////////////
     // Subscribe to an event type <T>
     // In our implementation, a listener subscribes to an event
