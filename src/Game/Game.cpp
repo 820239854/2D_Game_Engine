@@ -12,6 +12,8 @@
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/RenderColliderSystem.h"
 #include "../Systems/DamageSystem.h"
+#include "../Systems/KeyboardControlSystem.h"
+
 #include "../Components/TransformComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
@@ -86,6 +88,7 @@ void Game::ProcessInput()
             {
                 isDebug = !isDebug;
             }
+            eventBus->EmitEvent<KeyPressedEvent>(sdlEvent.key.keysym.sym);
             break;
         }
     }
@@ -100,6 +103,7 @@ void Game::LoadLevel(int level)
     registry->AddSystem<CollisionSystem>();
     registry->AddSystem<RenderColliderSystem>();
     registry->AddSystem<DamageSystem>();
+    registry->AddSystem<KeyboardControlSystem>();
 
     // Adding assets to the asset store
     assetStore->AddTexture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
@@ -185,6 +189,7 @@ void Game::Update()
     eventBus->Reset();
 
     registry->GetSystem<DamageSystem>().SubscribeToEvents(eventBus);
+    registry->GetSystem<KeyboardControlSystem>().SubscribeToEvents(eventBus);
 
     registry->Update();
     registry->GetSystem<MovementSystem>().Update(deltaTime);
