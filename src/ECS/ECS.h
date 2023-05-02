@@ -7,6 +7,7 @@
 #include <typeindex>
 #include <set>
 #include <memory>
+#include <deque>
 #include "../Logger/Logger.h"
 
 const unsigned int MAX_COMPONENTS = 32;
@@ -44,6 +45,7 @@ public:
     }
 
     Entity(const Entity &other) = default;
+    void Kill();
 
     int GetId() const
     {
@@ -203,6 +205,7 @@ public:
     TSystem &GetSystem() const;
 
     void AddEntityToSystems(Entity entity);
+    void RemoveEntityFromSystems(Entity entity);
 
 private:
     int numEntities = 0;
@@ -211,7 +214,10 @@ private:
     std::unordered_map<std::type_index, std::shared_ptr<System>> systems;
 
     std::set<Entity> entitiesToCreate;
-    std::set<Entity> entitiesToKill;
+    std::set<Entity> entitiesToBeKilled;
+
+    // List of free entity ids that were previously removed
+    std::deque<int> freeIds;
 };
 
 template <typename TComponrnt>
