@@ -28,6 +28,10 @@
 #include "../Components/HealthComponent.h"
 #include "../Components/TextLabelComponent.h"
 
+#include "../../libs/imgui/imgui.h"
+#include "../../libs/imgui/imgui_sdl.h"
+#include "../../libs/imgui/imgui_impl_sdl.h"
+
 int Game::windowWidth;
 int Game::windowHeight;
 int Game::mapWidth;
@@ -62,8 +66,8 @@ void Game::Initialize()
     }
     SDL_DisplayMode displayMode;
     SDL_GetCurrentDisplayMode(0, &displayMode);
-    windowWidth = 640;
-    windowHeight = 480;
+    windowWidth = displayMode.w;
+    windowHeight = displayMode.h;
     window = SDL_CreateWindow(
         NULL,
         SDL_WINDOWPOS_CENTERED,
@@ -82,6 +86,10 @@ void Game::Initialize()
         Logger::Err("Error creating SDL renderer.");
         return;
     }
+    // Initialize the ImGui context
+    ImGui::CreateContext();
+    ImGuiSDL::Initialize(renderer, windowWidth, windowHeight);
+
     // Initialize the camera view with the entire screen area
     camera.x = 0;
     camera.y = 0;
@@ -89,7 +97,7 @@ void Game::Initialize()
     camera.h = windowHeight;
 
     // 在保留原比例情况下，将窗口缩放到最大 (最大宽度或最大高度)
-    // SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
     isRunning = true;
 }
 
@@ -98,6 +106,16 @@ void Game::ProcessInput()
     SDL_Event sdlEvent;
     while (SDL_PollEvent(&sdlEvent))
     {
+        // ImGui SDL input
+        ImGui_ImplSDL2_ProcessEvent(&sdlEvent);
+        ImGuiIO &io = ImGui::GetIO();
+        int mouseX, mouseY;
+        const int buttons = SDL_GetMouseState(&mouseX, &mouseY);
+        io.MousePos = ImVec2(mouseX, mouseY);
+        io.MouseDown[0] = buttons & SDL_BUTTON(SDL_BUTTON_LEFT);
+        io.MouseDown[1] = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
+
+        // Handle core SDL events (close window, key pressed, etc.)
         switch (sdlEvent.type)
         {
         case SDL_QUIT:
@@ -265,7 +283,13 @@ void Game::Render()
     if (isDebug)
     {
         registry->GetSystem<RenderColliderSystem>().Update(renderer, camera);
+
+        ImGui::NewFrame();
+        ImGui::ShowDemoWindow();
+        ImGui::Render();
+        ImGuiSDL::Render(ImGui::GetDrawData());
     }
+
     SDL_RenderPresent(renderer);
 }
 
@@ -282,6 +306,8 @@ void Game::Run()
 
 void Game::Destroy()
 {
+    ImGuiSDL::Deinitialize();
+    ImGui::DestroyContext();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

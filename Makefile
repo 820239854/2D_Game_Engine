@@ -4,12 +4,13 @@
 CC = g++
 LANG_STD = -std=c++17
 COMPILER_FLAGS = -Wall -Wfatal-errors -g
-INCLUDE_PATH = -I"./libs/"
+INCLUDE_PATH = -I"./libs/imgui/"
 SRC_FILES = src/*.cpp \
 			src/Game/*.cpp \
 			src/Logger/*.cpp \
 			src/ECS/*.cpp \
-			src/AssetStore/*.cpp
+			src/AssetStore/*.cpp \
+			./libs/imgui/*.cpp
 LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -llua 
 OBJ_NAME = main
 
