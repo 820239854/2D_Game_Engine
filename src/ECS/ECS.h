@@ -52,6 +52,21 @@ public:
         return id;
     }
 
+    // Manage entity tags and groups
+    void Tag(const std::string &tag);
+    bool HasTag(const std::string &tag) const;
+    void Group(const std::string &group);
+    bool BelongsToGroup(const std::string &group) const;
+
+    template <typename TComponrnt, typename... TArgs>
+    void AddComponent(TArgs &&...args);
+    template <typename TComponrnt>
+    void RemoveComponent();
+    template <typename TComponrnt>
+    bool HasComponent() const;
+    template <typename TComponrnt>
+    TComponrnt &GetComponent() const;
+
     Entity &operator=(const Entity &other) = default;
 
     bool operator==(const Entity &other) const
@@ -73,15 +88,6 @@ public:
     {
         return id > other.id;
     }
-
-    template <typename TComponrnt, typename... TArgs>
-    void AddComponent(TArgs &&...args);
-    template <typename TComponrnt>
-    void RemoveComponent();
-    template <typename TComponrnt>
-    bool HasComponent() const;
-    template <typename TComponrnt>
-    TComponrnt &GetComponent() const;
 
     class Registry *registry;
 
@@ -182,6 +188,19 @@ public:
 
     Entity CreateEntity();
     void KillEntity(Entity entity);
+
+    // Tag management
+    void TagEntity(Entity entity, const std::string &tag);
+    bool EntityHasTag(Entity entity, const std::string &tag) const;
+    Entity GetEntityByTag(const std::string &tag) const;
+    void RemoveEntityTag(Entity entity);
+
+    // Group management
+    void GroupEntity(Entity entity, const std::string &group);
+    bool EntityBelongsToGroup(Entity entity, const std::string &group) const;
+    std::vector<Entity> GetEntitiesByGroup(const std::string &group) const;
+    void RemoveEntityGroup(Entity entity);
+
     void Update();
     void AddEntityToSystem(Entity entity, System *system);
     void RemoveEntityFromSystem(Entity entity, System *system);
@@ -210,11 +229,19 @@ public:
 private:
     int numEntities = 0;
     std::vector<std::shared_ptr<IPool>> componentPools;
-    std::vector<Signature> entityComponentsSignatures;
+    std::vector<Signature> entityComponentSignatures;
     std::unordered_map<std::type_index, std::shared_ptr<System>> systems;
 
-    std::set<Entity> entitiesToCreate;
+    std::set<Entity> entitiesToBeAdded;
     std::set<Entity> entitiesToBeKilled;
+
+    // Entity tags (one tag name per entity)
+    std::unordered_map<std::string, Entity> entityPerTag;
+    std::unordered_map<int, std::string> tagPerEntity;
+
+    // Entity groups (a set of entities per group name)
+    std::unordered_map<std::string, std::set<Entity>> entitiesPerGroup;
+    std::unordered_map<int, std::string> groupPerEntity;
 
     // List of free entity ids that were previously removed
     std::deque<int> freeIds;
@@ -251,7 +278,7 @@ void Registry::AddComponent(Entity entity, TArgs &&...args)
 
     TComponrnt newComponent(std::forward<TArgs>(args)...);
     componentPool->Set(entityId, newComponent);
-    entityComponentsSignatures[entityId].set(componentId);
+    entityComponentSignatures[entityId].set(componentId);
 
     Logger::Log("Component id = " + std::to_string(componentId) + " was added to entity id " + std::to_string(entityId));
 };
@@ -261,7 +288,7 @@ void Registry::RemoveComponent(Entity entity)
 {
     const auto componentId = Component<TComponrnt>::GetId();
     const auto entityId = entity.GetId();
-    entityComponentsSignatures[entityId].set(componentId, false);
+    entityComponentSignatures[entityId].set(componentId, false);
 
     Logger::Log("Component id = " + std::to_string(componentId) + " was removed from entity id " + std::to_string(entityId));
 };
@@ -271,7 +298,7 @@ bool Registry::HasComponent(Entity entity) const
 {
     const auto componentId = Component<TComponrnt>::GetId();
     const auto entityId = entity.GetId();
-    return entityComponentsSignatures[entityId].test(componentId);
+    return entityComponentSignatures[entityId].test(componentId);
 };
 
 template <typename TComponrnt>
