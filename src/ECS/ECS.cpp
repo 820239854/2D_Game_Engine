@@ -165,13 +165,25 @@ void Registry::Update()
         AddEntityToSystems(entity);
     }
     entitiesToBeAdded.clear();
+
     // Process the entities that are waiting to be killed from the active Systems
     for (auto entity : entitiesToBeKilled)
     {
         RemoveEntityFromSystems(entity);
         entityComponentSignatures[entity.GetId()].reset();
+
+        // Remove entity from component pools
+        for (auto pool : componentPools)
+        {
+            if (pool)
+            {
+                pool->RemoveEntityFromPool(entity.GetId());
+            }
+        }
+
         // Make the entity id available to be reused
         freeIds.push_back(entity.GetId());
+
         // Remove any traces of that entity from the tag/group maps
         RemoveEntityTag(entity);
         RemoveEntityGroup(entity);
