@@ -47,6 +47,12 @@ SDL_Texture *AssetStore::GetTexture(const std::string &assetId)
 
 void AssetStore::AddFont(const std::string &assetId, const std::string &filePath, int fontSize)
 {
+    TTF_Font *font = TTF_OpenFont(filePath.c_str(), fontSize);
+    if (font == nullptr)
+    {
+        Logger::Err("Failed to load font " + filePath + " with error: " + TTF_GetError());
+        return;
+    }
     fonts.emplace(assetId, TTF_OpenFont(filePath.c_str(), fontSize));
 }
 
