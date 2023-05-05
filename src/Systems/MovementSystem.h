@@ -1,4 +1,5 @@
-#define pragma once
+#ifndef MOVEMENTSYSTEM_H
+#define MOVEMENTSYSTEM_H
 
 #include "../ECS/ECS.h"
 #include "../Components/TransformComponent.h"
@@ -14,14 +15,27 @@ public:
 
     void Update(double deltaTime)
     {
+        // Loop all entities that the system is interested in
         for (auto entity : GetSystemEntities())
         {
+            // Update entity position based on its velocity
             auto &transform = entity.GetComponent<TransformComponent>();
-            const auto movement = entity.GetComponent<RigidBodyComponent>();
-            transform.position.x += movement.velocity.x * deltaTime;
-            transform.position.y += movement.velocity.y * deltaTime;
+            const auto rigidbody = entity.GetComponent<RigidBodyComponent>();
 
-            // Logger::Log("Entity " + std::to_string(entity.GetId()) + " moved to position: " + std::to_string(transform.position.x) + ", " + std::to_string(transform.position.y));
+            transform.position.x += rigidbody.velocity.x * deltaTime;
+            transform.position.y += rigidbody.velocity.y * deltaTime;
+
+            bool isEntityOutsideMap = (transform.position.x < 0 ||
+                                       transform.position.x > Game::mapWidth ||
+                                       transform.position.y < 0 ||
+                                       transform.position.y > Game::mapHeight);
+
+            // Kill all entities that move outside the map boundaries
+            if (isEntityOutsideMap && !entity.HasTag("player"))
+            {
+                entity.Kill();
+            }
         }
     }
 };
+#endif
