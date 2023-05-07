@@ -1,25 +1,21 @@
-#include "Game.h"
+#include "./Game.h"
 #include "./LevelLoader.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <glm/glm.hpp>
-#include <iostream>
-#include <fstream>
 #include "../Logger/Logger.h"
 #include "../ECS/ECS.h"
 #include "../Systems/MovementSystem.h"
+#include "../Systems/CameraMovementSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/RenderColliderSystem.h"
 #include "../Systems/DamageSystem.h"
-#include "../Systems/KeyboardControlSystem.h"
-#include "../Systems/CameraMovementSystem.h"
 #include "../Systems/ProjectileEmitSystem.h"
+#include "../Systems/KeyboardControlSystem.h"
 #include "../Systems/ProjectileLifecycleSystem.h"
 #include "../Systems/RenderTextSystem.h"
 #include "../Systems/RenderHealthBarSystem.h"
 #include "../Systems/RenderGUISystem.h"
+#include "../Systems/ScriptSystem.h"
 
 #include "../../libs/imgui/imgui.h"
 #include "../../libs/imgui/imgui_sdl.h"
@@ -84,12 +80,8 @@ void Game::Initialize()
     ImGuiSDL::Initialize(renderer, windowWidth, windowHeight);
 
     // Initialize the camera view with the entire screen area
-    camera.x = 0;
-    camera.y = 0;
-    camera.w = windowWidth;
-    camera.h = windowHeight;
+    camera = {0, 0, windowWidth, windowHeight};
 
-    // 在保留原比例情况下，将窗口缩放到最大 (最大宽度或最大高度)
     SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
     isRunning = true;
 }
@@ -145,22 +137,18 @@ void Game::Setup()
     registry->AddSystem<RenderTextSystem>();
     registry->AddSystem<RenderHealthBarSystem>();
     registry->AddSystem<RenderGUISystem>();
+    registry->AddSystem<ScriptSystem>();
+
+    registry->GetSystem<ScriptSystem>().CreateLuaBindings(lua);
 
     // Load the first level
     LevelLoader loader;
-    lua.open_libraries(sol::lib::base, sol::lib::math);
-    loader.LoadLevel(lua, registry, assetStore, renderer, 1);
+    lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::os);
+    loader.LoadLevel(lua, registry, assetStore, renderer, 2);
 }
 
 void Game::Update()
 {
-    // If we are too fast, waste some time until we reach the MILLISECS_PER_FRAME
-    int timeToWait = MILLISECS_PER_FRAME - (SDL_GetTicks() - millisecsPreviousFrame);
-    if (timeToWait > 0 && timeToWait <= MILLISECS_PER_FRAME)
-    {
-        SDL_Delay(timeToWait);
-    }
-
     // The difference in ticks since the last frame, converted to seconds
     double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0;
 
@@ -182,6 +170,7 @@ void Game::Update()
     registry->GetSystem<ProjectileEmitSystem>().Update(registry);
     registry->GetSystem<CameraMovementSystem>().Update(camera);
     registry->GetSystem<ProjectileLifecycleSystem>().Update();
+    registry->GetSystem<ScriptSystem>().Update(deltaTime, SDL_GetTicks());
 }
 
 void Game::Render()
